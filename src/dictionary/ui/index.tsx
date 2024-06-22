@@ -1,15 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useDictionary from "@/dictionary/hooks/useDictionary";
 import {
@@ -32,7 +23,12 @@ import {
   getDefaultTokenSummary,
   getInitialResultByToken,
 } from "@/dictionary/constants";
-import { normalizeLexeme, tokenizeLexemes } from "@/dictionary/usecases";
+import {
+  getLexemes,
+  normalizeLexeme,
+  tokenizeLexemes,
+} from "@/dictionary/usecases";
+import SelectToken from "@/dictionary/ui/SelectToken";
 
 function Tokenizer() {
   const { dictionary, updateDictionary, saveDictionary, resetDictionary } =
@@ -50,9 +46,7 @@ function Tokenizer() {
 
   const [lexemes, setLexemes] = useState<string[]>([]);
   const [currentLexemeIndex, setCurrentLexemeIndex] = useState<number>(0);
-  const [userSelectedToken, setUserSelectedToken] = useState<Token>(
-    "" as Token
-  );
+
   const [isUserSelectingToken, setIsUserSelectingToken] =
     useState<boolean>(false);
   const [result, setResult] = useState<TokenizeResult[]>([]);
@@ -61,6 +55,9 @@ function Tokenizer() {
   const [assignedLexemes, setAssignedLexemes] = useState(0);
 
   const [hasFinished, setHasFinished] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   async function handleUploadFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     setResult([]);
@@ -73,13 +70,8 @@ function Tokenizer() {
       return;
     }
 
-    const content = await file.text();
-    const lexemeArray = content
-      .replace(/\n|,|;|\./g, " ")
-      .replace(/\s+/g, " ")
-      .split(" ")
-      .map((lexeme) => lexeme.trim())
-      .filter((lexeme) => lexeme.length > 0);
+    const text = await file.text();
+    const lexemeArray = getLexemes(text);
 
     setLexemes(lexemeArray);
 
@@ -116,14 +108,14 @@ function Tokenizer() {
     setIsUserSelectingToken(true);
   };
 
-  function handleSelectedToken() {
-    if (!userSelectedToken || currentLexemeIndex >= lexemes.length) {
+  function handleSelectedToken(selectedToken: Token) {
+    if (!selectedToken || currentLexemeIndex >= lexemes.length) {
       return;
     }
     setAssignedLexemes((previousValue) => previousValue + 1);
     const lexeme = lexemes[currentLexemeIndex];
     const result = [
-      { lexeme, token: userSelectedToken, position: currentLexemeIndex + 1 },
+      { lexeme, token: selectedToken, position: currentLexemeIndex + 1 },
     ];
     updateResult(result, currentLexemeIndex, lexemes);
 
@@ -132,13 +124,13 @@ function Tokenizer() {
     // Update the dictionary
     const normalizedLexeme = normalizeLexeme(lexeme);
     const updatedDictionary = updateDictionary({
-      [normalizedLexeme]: userSelectedToken,
+      [normalizedLexeme]: selectedToken,
     });
 
     // Update the summary information
     const newValue = { ...tokenSummary };
-    newValue[userSelectedToken].total += 1;
-    newValue[userSelectedToken].lastAddedTotal += 1;
+    newValue[selectedToken].total += 1;
+    newValue[selectedToken].lastAddedTotal += 1;
     setTokenSummary(newValue);
 
     // Continue with the next lexeme
@@ -189,6 +181,7 @@ function Tokenizer() {
     setHasFinished(false);
     setLexemes([]);
     updateTokenSummary();
+    if (fileInputRef.current?.value) fileInputRef.current.value = "";
   }
 
   return (
@@ -201,6 +194,7 @@ function Tokenizer() {
             type="file"
             accept=".txt"
             onChange={handleUploadFile}
+            ref={fileInputRef}
           />
         </div>
         {lexemes.length === 0 && (
@@ -217,36 +211,10 @@ function Tokenizer() {
         )}
       </div>
       {isUserSelectingToken && (
-        <div className="flex justify-center flex-col items-center gap-2">
-          <h2>Oops, lexema no encontrado en el diccionario:</h2>
-          <Label>
-            <p className="text-8xl font-serif text-center">
-              {lexemes[currentLexemeIndex]}
-            </p>
-          </Label>
-          <Select
-            onValueChange={(value) => setUserSelectedToken(value as Token)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Selecciona un token" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Tokens</SelectLabel>
-                <SelectItem value="article">Artículo</SelectItem>
-                <SelectItem value="noun">Sustantivo</SelectItem>
-                <SelectItem value="verb">Verbo</SelectItem>
-                <SelectItem value="adjective">Adjectivo</SelectItem>
-                <SelectItem value="adverb">Adverbio</SelectItem>
-                <SelectItem value="other">Otros</SelectItem>
-                <SelectItem value="error">Error</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <Button className="w-min" onClick={handleSelectedToken}>
-            Guardar
-          </Button>
-        </div>
+        <SelectToken
+          lexeme={lexemes[currentLexemeIndex]}
+          handleSelectedToken={handleSelectedToken}
+        />
       )}
 
       {lexemes.length > 0 && (

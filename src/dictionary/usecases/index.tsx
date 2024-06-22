@@ -33,3 +33,19 @@ export const normalizeLexeme = (lexeme: string) => {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 };
+
+/**
+ * Obtiene una lista de lexemas a partir de un texto donde las palabras
+ * están separadas por espacios, coma, punto y coma o punto.
+ * @param text Texto a tokenizar
+ * @returns Lista de lexemas a tokenizar
+ */
+export const getLexemes = (text: string) => {
+  const lexemes = text
+    .replace(/\n|,|;|\./g, " ")
+    .replace(/\s+/g, " ")
+    .split(" ")
+    .map((lexeme) => lexeme.trim())
+    .filter((lexeme) => lexeme.length > 0);
+  return lexemes;
+};
