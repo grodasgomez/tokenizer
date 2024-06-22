@@ -144,10 +144,8 @@ function Tokenizer() {
   ) {
     setResult((prevResult) => [...prevResult, ...result]);
 
-    if (processedLexemes <= 100) {
-      const newProgress = Math.round(((lastIndex + 1) / lexemes.length) * 100);
-      setProcessedLexemes(newProgress);
-    }
+    const newProgress = Math.round(((lastIndex + 1) / lexemes.length) * 100);
+    setProcessedLexemes(newProgress);
   }
 
   function updateTokenSummary() {
@@ -168,9 +166,11 @@ function Tokenizer() {
     const resultStr = JSON.stringify(resultByToken, null, 2);
     const blob = new Blob([resultStr], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
+    const fileName = `result_${new Date().toISOString()}.json`;
+
     const a = document.createElement("a");
     a.href = url;
-    a.download = "result.json";
+    a.download = fileName;
     a.click();
   }
 

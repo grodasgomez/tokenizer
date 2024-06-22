@@ -36,7 +36,7 @@ function SelectToken(props: SelectTokenProps) {
             <SelectItem value="article">Artículo</SelectItem>
             <SelectItem value="noun">Sustantivo</SelectItem>
             <SelectItem value="verb">Verbo</SelectItem>
-            <SelectItem value="adjective">Adjectivo</SelectItem>
+            <SelectItem value="adjective">Adjetivo</SelectItem>
             <SelectItem value="adverb">Adverbio</SelectItem>
             <SelectItem value="other">Otros</SelectItem>
             <SelectItem value="error">Error</SelectItem>
