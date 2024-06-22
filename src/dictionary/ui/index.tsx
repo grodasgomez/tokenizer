@@ -195,6 +195,7 @@ function Tokenizer() {
             accept=".txt"
             onChange={handleUploadFile}
             ref={fileInputRef}
+            disabled={lexemes.length > 0 && !hasFinished}
           />
         </div>
         {lexemes.length === 0 && (
@@ -211,14 +212,16 @@ function Tokenizer() {
         )}
       </div>
       {isUserSelectingToken && (
-        <SelectToken
-          lexeme={lexemes[currentLexemeIndex]}
-          handleSelectedToken={handleSelectedToken}
-        />
+        <div className="flex justify-center flex-col items-center gap-4">
+          <SelectToken
+            lexeme={lexemes[currentLexemeIndex]}
+            handleSelectedToken={handleSelectedToken}
+          />
+        </div>
       )}
 
       {lexemes.length > 0 && (
-        <div className="flex flex-row gap-4">
+        <div className="flex flex-row justify-center gap-4">
           <Card className="w-[350px]">
             <CardHeader>
               <CardTitle>Lexemas procesados</CardTitle>

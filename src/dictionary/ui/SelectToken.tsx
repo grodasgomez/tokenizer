@@ -21,10 +21,10 @@ function SelectToken(props: SelectTokenProps) {
     "" as Token
   );
   return (
-    <div className="flex justify-center flex-col items-center gap-2">
+    <>
       <h2>Oops, lexema no encontrado en el diccionario:</h2>
       <Label>
-        <p className="text-8xl font-serif text-center">{lexeme}</p>
+        <p className="text-8xl font-serif">{lexeme}</p>
       </Label>
       <Select onValueChange={(value) => setUserSelectedToken(value as Token)}>
         <SelectTrigger className="w-[180px]">
@@ -49,7 +49,7 @@ function SelectToken(props: SelectTokenProps) {
       >
         Guardar
       </Button>
-    </div>
+    </>
   );
 }
 
