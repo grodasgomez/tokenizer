@@ -1,1 +1,1 @@
-Un intérprete es un programa informático que procesa el código fuente mientras el software se está ejecutando
+Un intérprete es un programa informático que procesa el código fuente mientras el software se está ejecutando.

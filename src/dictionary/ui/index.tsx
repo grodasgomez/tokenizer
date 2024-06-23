@@ -29,10 +29,13 @@ import {
   tokenizeLexemes,
 } from "@/dictionary/usecases";
 import SelectToken from "@/dictionary/ui/SelectToken";
+import useInputFileNumber from "@/dictionary/hooks/useInputFileNumber";
 
 function Tokenizer() {
   const { dictionary, updateDictionary, saveDictionary, resetDictionary } =
     useDictionary();
+
+  const { inputFileNumber, setInputFileNumber } = useInputFileNumber();
 
   const initialTokenSummary = Object.entries(dictionary).reduce(
     (acc, [, token]) => {
@@ -69,7 +72,8 @@ function Tokenizer() {
     if (!file) {
       return;
     }
-
+    // Actualizamos el número de archivo a procesar
+    setInputFileNumber(inputFileNumber + 1);
     const text = await file.text();
     const lexemeArray = getLexemes(text);
 
@@ -151,17 +155,19 @@ function Tokenizer() {
   function updateTokenSummary() {
     const newValue = { ...tokenSummary };
     Object.entries(newValue).forEach(([key, value]) => {
-      newValue[key].previousTotal = value.total;
-      newValue[key].lastAddedTotal = 0;
+      const typedKey = key as Token;
+      newValue[typedKey].previousTotal = value.total;
+      newValue[typedKey].lastAddedTotal = 0;
     });
     setTokenSummary(newValue);
   }
 
   function downloadResult() {
     const resultByToken = getInitialResultByToken();
+    const positionPrefix = `TXT${inputFileNumber}`;
     result.forEach(({ lexeme, token, position }) => {
       resultByToken[token].lexemes.push(lexeme);
-      resultByToken[token].positions.push(`TXT1-${position}`);
+      resultByToken[token].positions.push(`${positionPrefix}-${position}`);
     });
     const resultStr = JSON.stringify(resultByToken, null, 2);
     const blob = new Blob([resultStr], { type: "text/plain" });
@@ -204,6 +210,7 @@ function Tokenizer() {
             onClick={() => {
               resetDictionary();
               setTokenSummary(getDefaultTokenSummary());
+              setInputFileNumber(0);
             }}
             variant={"destructive"}
           >
